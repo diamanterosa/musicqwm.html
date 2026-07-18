@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "senha": "123",
+    "codigo2FA": "123456"
+  },
+  "suporte": {
+    "senha": "999",
+    "codigo2FA": "654321"
+  },
+  "maranhaosup": {
+    "senha": "sucesso2026",
+    "codigo2FA": "000000"
+  }
+}
