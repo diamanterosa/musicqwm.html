@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Mais - Painel de Mídia Indoor</title>
+    <style>
+        :root {
+            --primary: #22c55e;
+            --primary-hover: #16a34a;
+            --bg-card: rgba(255, 255, 255, 0.08);
+            --border-card: rgba(255, 255, 255, 0.15);
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), 
+                        url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200') no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SCREEN 1: LOGIN */
+        #login-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card {
+            background: rgba(15, 15, 15, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .login-card h1 { font-size: 32px; font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; }
+        .login-card p { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px; }
+
+        /* DASHBOARD (ESCONDIDO ANTES DO LOGIN) */
+        #main-panel { display: none; flex: 1; flex-direction: column; }
+        header {
+            background: rgba(15, 15, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand-name { font-size: 28px; font-weight: 900; letter-spacing: 2px; }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 16px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .user-avatar { width: 32px; height: 32px; background: #e4e4e7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #18181b; }
+        .user-info { font-size: 13px; font-weight: 500; text-align: left; }
+        .user-info span { color: var(--text-muted); font-size: 11px; display: block; }
+
+        .container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 30px; }
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-card);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        .card-title { font-size: 16px; font-weight: 600; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; }
+
+        textarea, input[type="text"], input[type="password"] {
+            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px; color: #fff; padding: 12px; font-size: 14px; outline: none; resize: none;
+        }
+        textarea:focus, input[type="text"]:focus, input[type="password"]:focus { border-color: var(--primary); }
+        textarea { flex: 1; min-height: 180px; font-family: monospace; }
+
+        .radio-group { display: flex; flex-direction: column; gap: 12px; }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .radio-label input { accent-color: var(--primary); width: 18px; height: 18px; }
+
+        .playlist-output { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
+        .copy-box { display: flex; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; overflow: hidden; }
+        .copy-box input { border: none; background: transparent; padding: 10px; }
+        .btn-copy { background: rgba(255, 255, 255, 0.1); border: none; color: #fff; padding: 0 15px; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .btn-copy:hover { background: rgba(255, 255, 255, 0.2); }
+
+        .terminal { background: rgba(5, 5, 5, 0.85); font-family: monospace; font-size: 13px; color: #34d399; padding: 15px; border-radius: 8px; flex: 1; min-height: 180px; overflow-y: auto; }
+
+        /* TVS PANEL (PROTÓTIPO AZUL) */
+        .card-tvs { grid-column: 1 / -1; background: rgba(10, 25, 47, 0.35) !important; border: 1px solid rgba(255, 255, 255, 0.12) !important; padding: 0 !important; overflow: hidden; }
+        .tvs-container { display: flex; min-height: 220px; }
+        .tvs-sidebar { flex: 1; background: rgba(10, 20, 35, 0.5); padding: 30px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid rgba(255, 255, 255, 0.08); }
+        .tvs-sidebar h2 { font-size: 22px; font-weight: 900; }
+        .tvs-counter { font-size: 14px; color: #8892b0; margin-top: 5px; }
+        .tvs-counter span { color: #64ffda; }
+        .tvs-list-wrapper { flex: 2.5; padding: 25px; display: flex; flex-direction: column; }
+        .tvs-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; max-height: 160px; overflow-y: auto; }
+        .tv-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+        .tv-item:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(100, 255, 218, 0.4); transform: translateY(-2px); }
+        .tv-status-dot { width: 10px; height: 10px; background: #00e676; border-radius: 50%; box-shadow: 0 0 10px #00e676; }
+        .tv-details { display: flex; flex-direction: column; }
+        .tv-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+        .tv-info { font-size: 11px; color: #8892b0; margin-top: 2px; }
+        .tvs-footer { margin-top: auto; text-align: right; font-style: italic; font-size: 14px; color: #ccd6f6; }
+
+        .actions-footer { background: rgba(10, 10, 10, 0.85); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 20px 30px; display: flex; justify-content: flex-end; gap: 15px; }
+        .btn { padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: background 0.2s; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.15); }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3); width: 100%; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-footer { width: auto; }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; padding: 15px; }
+            .tvs-container { flex-direction: column; }
+            .tvs-sidebar { padding: 20px; text-align: center; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+            .actions-footer { flex-direction: column; }
+            .btn-footer { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCREEN 1: LOGIN -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h1>TV MAIS</h1>
+            <p>Painel de Gerenciamento Indoor</p>
+            <div class="input-group">
+                <label id="lblUser">Usuário</label>
+                <input type="text" id="username" placeholder="Digite seu usuário">
+            </div>
+            <div class="input-group">
+                <label id="lblPass">Senha</label>
+                <input type="password" id="password" placeholder="Digite sua senha">
+            </div>
+            <button class="btn btn-primary" id="btnLogin" onclick="efetuarLogin()">Entrar no Sistema</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN DASHBOARD -->
+    <div id="main-panel">
+        <header>
+            <div class="brand-name">TV MAIS</div>
+            <div class="user-profile">
+                <div class="user-avatar" id="avatarLetra">U</div>
+                <div class="user-info">
+                    <span id="userEmail">carregando...</span>
+                    <span id="userUnidade">Unidade: Ativa</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="card">
+                <div class="card-title">Links dos Vídeos</div>
+                <textarea id="txtPrincipal" placeholder="Cole uma URL de vídeo por linha..."></textarea>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Fotos</div>
+                <input type="text" placeholder="Cole a URL da foto aqui...">
+                <div style="color: var(--text-muted); font-size: 13px; text-align: center; margin-top: 15px; border: 2px dashed rgba(255,255,255,0.12); padding: 40px; border-radius: 8px; background: rgba(0,0,0,0.2);">
+                    Exemplo usando!!
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Vídeo em Continuação (Único Canal)</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="continuacao" value="sim" checked> Sim</label>
+                    <label class="radio-label"><input type="radio" name="continuacao" value="nao"> Não</label>
+                </div>
+                <div class="playlist-output">
+                    <div style="font-size: 13px; font-weight: 500;">Link da Playlist</div>
+                    <div class="copy-box">
+                        <input type="text" id="linkM3uExclusivo" value="" readonly>
+                        <button class="btn-copy" onclick="copiarLink()">Copiar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Logs</div>
+                <div class="terminal" id="terminalLogs">
+                    [SISTEMA]: Inicializado com sucesso.<br>
+                    [STATUS]: Conectado com segurança à API TV Mais.
+                </div>
+            </div>
+
+            <div class="card card-tvs">
+                <div class="tvs-container">
+                    <div class="tvs-sidebar">
+                        <h2>TVS DISPONÍVEIS</h2>
+                        <p class="tvs-counter"><span id="totalTvs">4</span> Telas Conectadas</p>
+                    </div>
+                    <div class="tvs-list-wrapper">
+                        <ul class="tvs-list">
+                            <li class="tv-item" onclick="conectarTv('ROKU TV AOC 32P')">
+                                <div class="tv-status-dot"></div>
+                                <div class="tv-details"><span class="tv-name">ROKU TV AOC 32P</span><span class="tv-info">Ativa • Respondendo via App M3U</span></div>
+                            </li>
+                            <li class="tv-item" onclick="conectarTv('TV SAMSUNG-QBA3341')">
+                                <div class="tv-status-dot"></div>
+                                <div class="tv-details"><span class="tv-name">TV SAMSUNG-QBA3341</span><span class="tv-info">Ativa • Sincronizada</span></div>
+                            </li>
+                            <li class="tv-item" onclick="conectarTv('TV AOC 10PG')">
+                                <div class="tv-status-dot"></div>
+                                <div class="tv-details"><span class="tv-name">TV AOC 10PG</span><span class="tv-info">Ativa • Conectada</span></div>
+                            </li>
+                            <li class="tv-item" onclick="conectarTv('OUTDOOR')">
+                                <div class="tv-status-dot"></div>
+                                <div class="tv-details"><span class="tv-name">OUTDOOR</span><span class="tv-info">Ativa • Painel de LED Externo</span></div>
+                            </li>
+                        </ul>
+                        <div class="tvs-footer"><span>Clique e Conecte</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="actions-footer">
+            <button class="btn btn-secondary btn-footer" onclick="buscarNovasTvs()">Conectar Lista a Tvs a Perto</button>
+            <button class="btn btn-primary btn-footer" onclick="iniciarProcesso()">Iniciar</button>
+        </footer>
+    </div>
+
+    <script>
+        let usuarioLogado = "";
+        let etapa2FA = false; 
+
+        async function efetuarLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (!user) return alert("Digite o usuário!");
+
+            if (!etapa2FA) {
+                if (!pass) return alert("Digite a senha!");
+
+                const res = await fetch('/api/login/passo1', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user, pass })
+                });
+                const dados = await res.json();
+
+                if (res.ok && dados.requer2FA) {
+                    etapa2FA = true;
+                    document.getElementById('lblPass').innerText = "Código de Segurança por E-mail 📬";
+                    const campoPass = document.getElementById('password');
+                    campoPass.value = ""; campoPass.type = "text";
+                    campoPass.placeholder = "Digite o código de 6 dígitos";
+                    document.getElementById('btnLogin').innerText = "Confirmar Código";
+                } else {
+                    alert(dados.erro || "Dados incorretos!");
+                }
+            } else {
+                const codigoDigitado = document.getElementById('password').value.trim();
+                const res = await fetch('/api/login/passo2', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user, codigo: codigoDigitado })
+                });
+                const dados = await res.json();
+
+                if (res.ok && dados.sucesso) {
+                    usuarioLogado = dados.usuario;
+                    document.getElementById('avatarLetra').innerText = usuarioLogado.substring(0, 2).toUpperCase();
+                    document.getElementById('userEmail').innerText = user + "@tvmais.io";
+                    document.getElementById('userUnidade').innerText = "Unidade: " + usuarioLogado.toUpperCase();
+                    document.getElementById('linkM3uExclusivo').value = `player.tvmais.eu.cc/ofertas.m3u?user=${usuarioLogado}`;
+
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('main-panel').style.display = 'flex';
+                } else {
+                    alert(dados.erro || "Código inválido!");
+                }
+            }
+        }
+
+        function copiarLink() {
+            const inputLink = document.getElementById('linkM3uExclusivo');
+            inputLink.select();
+            navigator.clipboard.writeText(inputLink.value);
+            const terminal = document.getElementById('terminalLogs');
+            terminal.innerHTML += "<br><span style='color: #60a5fa'>[INFO]: Link copiado para uso nas TVs!</span>";
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function iniciarProcesso() {
+            const terminal = document.getElementById('terminalLogs');
+            terminal.innerHTML += "<br><span style='color: #eab308'>[PLAYLIST]: Sincronizando novas ofertas...</span>";
+            setTimeout(() => {
+                terminal.innerHTML += "<br><span style='color: #22c55e'>✓ Lista atualizada e transmitindo com sucesso!</span>";
+                terminal.scrollTop = terminal.scrollHeight;
+            }, 800);
+        }
+
+        function conectarTv(nomeTv) {
+            const terminal = document.getElementById('terminalLogs');
+            terminal.innerHTML += `<br><span style='color: #64ffda'>[TV]: Atualizando instantaneamente a tela ${nomeTv}...</span>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function buscarNovasTvs() {
+            const terminal = document.getElementById('terminalLogs');
+            terminal.innerHTML += "<br><span style='color: #a1a1aa'>[SCANNER]: Buscando TVs ativas na rede...</span>";
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    </script>
+</body>
+</html>
